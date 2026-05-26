@@ -184,18 +184,26 @@ wget "https://ftp.sorghumbase.org/release-10/fasta/sorghum_riouncc/dna/Sorghum_r
 **Leoti** — uses numeric chromosome names (`1, 2, 3...`), must be renamed to `Chr01_RagTag` convention (see Step 1).
 
 ### Gene Annotations (GFFs)
-Pan-gene annotations from the Ware Lab are at:
-`/projects/cooper_research/Ware_Lab_Annotations/`
 
-Available for: ChineseAmber, Leoti, PI229841, PI297155, PI300119, PI329311, PI506069, PI510757, PI655972, Rio.
+#### Ware Lab Pan-Gene Annotations
+Ten accessions use pan-gene annotations produced by the Ware Lab (Voelker et al. 2023) and available at `/projects/cooper_research/Ware_Lab_Annotations/`:
 
-**BTx623** — pan-gene annotation with AED < 1 filter:
-`/projects/cooper_research/Ware_Lab_Annotations/btx623.pan-gene.aed_lt1.gff`
+ChineseAmber, Leoti, PI229841, PI297155, PI300119, PI329311, PI506069, PI510757, PI655972, Rio
 
-**TX430** — coding annotation:
+These annotations were built using a pan-gene working set derived from a comparative analysis of gene family trees across 18 sorghum genomes sourced from SorghumBase. Pan-gene models were propagated onto each assembly using Liftoff v1.6.3 (`-a 0.95 -s 0.95 -copies -cds -polish`) and then refined with transcriptome evidence from BTx623 using PASA v2.4.1 with full-length cDNAs and sorghum ESTs from NCBI. Annotation Edit Distance (AED) scores were assigned using MAKER-P v3.0; only transcripts with AED < 1 were retained as protein-coding. Canonical transcripts were assigned using TRaCE based on domain coverage and protein length. See Voelker et al. 2023 for full details.
+
+#### BTx623
+The BTx623 GFF was downloaded from SorghumBase v5.1 and filtered to remove scaffold features before use (see Step 2):
+`/projects/cooper_research/Ref_Genomes/BTx623/v5.0.0/annotation/Sorghum_v5BTX623.gff3`
+
+#### TX430
+Coding annotation from the Ware Lab pan-gene set:
 `/projects/cooper_research/Ref_Genomes/pantranscriptome/to_Liz_sorghum_18_genomes_pangene_annotations/tx430.pan-gene.coding.gff`
 
-**Grassl** — no Ware Lab annotation available; gene models lifted from BTx623 using Liftoff (see Step 3).
+#### Grassl
+Grassl was not included in the Ware Lab pan-gene annotation set. Gene models were therefore lifted over from BTx623 v5.0.0 using Liftoff as a best-available alternative. All other accessions use the Ware Lab pan-gene annotations which incorporate transcriptome evidence and are of higher quality than Liftoff predictions. The Liftoff annotation is generated in Step 3 and written to `/users/edecocke/step5/Grassl.pan-gene.liftoff.gff`.
+
+---
 
 ---
 
