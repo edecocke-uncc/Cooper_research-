@@ -3,20 +3,40 @@
 build_pav_from_gffs.py
 -----------------------
 Builds a presence/absence variation (PAV) matrix directly from per-accession
-GFF files. For each GFF, extracts all gene-level IDs. Presence = gene ID found
-in that accession's GFF; absence = not found.
+GFF files across 13 sorghum accessions.
 
-Output: /users/edecocke/step5/PAV_13accessions.csv
+For each GFF, gene-level feature IDs are extracted using the ID= attribute in
+the 9th column. A gene locus is marked as present (1) in an accession if its
+ID appears in that accession's GFF, and absent (0) otherwise.
 
-Rows    = union of all gene locus IDs across all 13 GFFs
-Columns = one per accession (0/1)
+Input:
+    Per-accession GFF files (paths defined in the GFFS dict below). Sources:
+        - Ware Lab pan-gene annotations (11 accessions, AED < 1 filtered)
+        - JGI pantranscriptome pan-gene coding annotation (tx430)
+        - BTx623 chromosome-only filtered GFF (btx623)
+        - Liftoff-generated annotation lifted from BTx623 onto Grassl assembly
+
+Output:
+    /users/edecocke/step5/PAV_13accessions.csv
+        Rows    = union of all gene locus IDs across all 13 GFFs
+        Columns = Gene, then one column per accession (0/1 values)
+
+    Summary statistics are printed to stdout including total loci, core
+    (present in all 13), accessory, private (present in exactly 1), and
+    per-accession gene counts.
+
+Usage:
+    python3 build_pav_from_gffs.py
+
+Dependencies:
+    pandas
 """
 
 import re
 import csv
 from collections import defaultdict
 
-# ── GFF PATHS ─────────────────────────────────────────────────────────────────
+# GFF PATHS 
 GFFS = {
     "ChineseAmber": "/projects/cooper_research/Ware_Lab_Annotations/ChineseAmber.pan-gene.aed_lt1.gff",
     "Leoti":        "/projects/cooper_research/Ware_Lab_Annotations/Leoti.pan-gene.aed_lt1.gff",
@@ -40,7 +60,22 @@ ID_RE = re.compile(r'(?:^|;)ID=([^;]+)')
 
 
 def get_gene_ids(gff_path):
-    """Return set of gene IDs from a GFF (lines where feature type == 'gene')."""
+    """
+    Parse a GFF file and return the set of gene locus IDs it contains.
+
+    Reads through the GFF line by line, skipping comment lines (starting with
+    '#') and any lines with fewer than 9 tab-delimited fields. Only lines where
+    the feature type (column 3) is exactly 'gene' are considered. The gene ID
+    is extracted from the attributes column (column 9) using the ID= key.
+
+    Args:
+        gff_path (str): Absolute path to the GFF file to parse.
+
+    Returns:
+        set[str]: Set of gene ID strings found in the file. Returns an empty
+                  set if the file contains no valid gene features or no ID=
+                  attributes can be parsed.
+    """
     gene_ids = set()
     with open(gff_path) as f:
         for line in f:
@@ -57,7 +92,7 @@ def get_gene_ids(gff_path):
     return gene_ids
 
 
-# ── MAIN ──────────────────────────────────────────────────────────────────────
+# MAIN 
 
 accessions = list(GFFS.keys())
 presence = {}   # accession -> set of gene IDs
@@ -75,7 +110,7 @@ for ids in presence.values():
 
 print(f"\nTotal unique loci across all 13 accessions: {len(all_loci):,}")
 
-# ── WRITE PAV CSV ─────────────────────────────────────────────────────────────
+# WRITE PAV CSV 
 print(f"\nWriting PAV to {OUT_CSV} ...")
 
 with open(OUT_CSV, 'w', newline='') as f:
@@ -87,7 +122,7 @@ with open(OUT_CSV, 'w', newline='') as f:
 
 print("Done.")
 
-# ── SUMMARY STATS ─────────────────────────────────────────────────────────────
+# SUMMARY STATS
 import pandas as pd
 df = pd.read_csv(OUT_CSV)
 acc_cols = df.columns[1:]
